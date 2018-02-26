@@ -3,7 +3,10 @@ package com.isa.usersengine.servlets;
 import com.isa.usersengine.dao.UsersRepositoryDao;
 import com.isa.usersengine.dao.UsersRepositoryDaoBean;
 import com.isa.usersengine.domain.User;
+import com.isa.usersengine.freemarker.TemplateProvider;
 import com.isa.usersengine.repository.UsersRepository;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -13,6 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 @WebServlet("/find-user-by-id")
 public class FindUserByIdServlet extends HttpServlet {
@@ -29,22 +34,18 @@ public class FindUserByIdServlet extends HttpServlet {
         } else {
 
             Integer id = Integer.parseInt(req.getParameter("id"));
-            resp.setContentType("text/html;charset=UTF-8");
-            PrintWriter writer = resp.getWriter();
 
-            //UsersRepositoryDao ur = new UsersRepositoryDaoBean();
+            User user = usersRepositoryDao.getUserById(id);
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("user", user);
+            PrintWriter printWriter = resp.getWriter();
+            Template template = TemplateProvider.createTemplate(getServletContext(), "find-user-by-id.ftlh");
+            try {
+                template.process(dataModel, printWriter);
+            } catch (TemplateException e) {
+                e.printStackTrace();
+            }
 
-            User temp = usersRepositoryDao.getUserById(id);
-
-
-            writer.println("<!DOCTYPE html>");
-            writer.println("<html>");
-            writer.println("<body>");
-            writer.println(temp.getName()
-                    + " " + temp.getLogin() + " "
-                    + temp.getAge());
-            writer.println("</body>");
-            writer.println("</html>");
         }
     }
 }
